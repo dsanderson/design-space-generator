@@ -74,3 +74,29 @@ class Design_Generator():
             for c in node['children']:
                 self.print_tree_rec(c,depth+1)
                 print ''
+
+    def get_design(self, index):
+        return self.get_design_rec(self.design_space_tree, index)
+
+    def get_design_rec(self, node, index):
+        if node['type']=='range' or node['type']=='set':
+            return [{'label':node['label'],'data':node['values'][index]}]
+        if node['type']=='sum':
+            # based on the length of the
+            total = 0
+            i = 0
+            while total<index and i<len(node['children']):
+                total += node['children'][i]['size']
+                i += 1
+            new_i = i-1
+            new_index = index - total + node['children'][new_i]['size']
+            new_node = node['children'][new_i]
+            return self.get_design_rec(new_node, new_index)
+        if node['type']=='product':
+            ret = []
+            temp_index = index
+            for c in node['children']:
+                i = temp_index%c['size']
+                ret = ret+self.get_design_rec(c, i)
+                temp_index = int(temp_index/c['size'])
+            return ret
